@@ -1,9 +1,12 @@
-# fly.toml file generated for borpalive on 2021-07-16T00:31:33-04:00
+# fly.toml file generated for borpalive-server on 2021-07-18T22:53:48-04:00
 
-app = "borpalive"
+app = "borpalive-server"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
+
+[build]
+  builtin = "go"
 
 [env]
 
