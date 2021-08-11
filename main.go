@@ -18,7 +18,7 @@ var hub = newHub()
 
 func main() {
 	if err := godotenv.Load(".env"); err != nil {
-		panic(err)
+		fmt.Print("env file not found, make sure this is on prod")
 	}
 
 	client := twitch.NewAnonymousClient()
