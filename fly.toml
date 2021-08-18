@@ -1,14 +1,16 @@
-# fly.toml file generated for borpalive-server on 2021-07-18T22:53:48-04:00
+# fly.toml file generated for polished-snowflake-9853 on 2021-08-16T00:03:07-04:00
 
-app = "borpalive-server"
+app = "polished-snowflake-9853"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
 
 [build]
-  builtin = "go"
+  builder = "paketobuildpacks/builder:base"
+  buildpacks = ["gcr.io/paketo-buildpacks/go"]
 
 [env]
+  PORT = "8080"
 
 [experimental]
   allowed_public_ports = []
