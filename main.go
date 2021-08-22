@@ -52,7 +52,7 @@ func main() {
 				count++
 			}
 			if count > 0 {
-				borpas[word] += count
+				borpas[lower] += count
 				hub.broadcast <- []byte(strconv.Itoa(count))
 			}
 		}
@@ -100,7 +100,7 @@ func main() {
 		AllowedHeaders: []string{"a_custom_header", "content_type"},
 	}).Handler(http.DefaultServeMux)
 
-	ticker := time.NewTicker(600 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	quit := make(chan struct{})
 	go func() {
 		for {
@@ -115,6 +115,7 @@ func main() {
 		}
 	}()
 
+	test()
 	print("Wtf")
 	err := http.ListenAndServe(":8081", handler)
 
