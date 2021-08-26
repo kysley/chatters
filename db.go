@@ -16,7 +16,7 @@ func Today() string {
 
 func WriteCache() {
 	log.Print("Writing cache to database")
-	database, _ := sql.Open("sqlite3", "/data/sql.db")
+	database, _ := sql.Open("sqlite3", "borpa-data/sql.db")
 	defer database.Close()
 	for key, count := range borpas {
 		if count > 0 {

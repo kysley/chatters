@@ -3,11 +3,11 @@ RUN apk --no-cache add gcc g++ make git
 WORKDIR /go/src/app
 COPY . .
 RUN go mod download
-RUN GOOS=linux go build -ldflags="-s -w" -o ./bin/web-app ./main.go
+RUN GOOS=linux go build -ldflags="-s -w" -o ./bin/borpalive ./main.go
 
 FROM alpine:3.13
 RUN apk --no-cache add ca-certificates
 WORKDIR /usr/bin
 COPY --from=build /go/src/app/bin /go/bin
 EXPOSE 8081
-ENTRYPOINT /go/bin/web-app --port 8081
+ENTRYPOINT /go/bin/borpalive --port 8081
