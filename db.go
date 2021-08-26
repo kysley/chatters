@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -15,7 +16,7 @@ func Today() string {
 
 func WriteCache() {
 	log.Print("Writing cache to database")
-	database, _ := sql.Open("sqlite3", "borp/sql.db")
+	database, _ := sql.Open("sqlite3", "/data/sql.db")
 	defer database.Close()
 	for key, count := range borpas {
 		if count > 0 {
@@ -40,18 +41,41 @@ func ResetCache() {
 	}
 }
 
-func test() {
-	database, _ := sql.Open("sqlite3", "borp/sql.db")
-	defer database.Close()
-	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS totals ( " +
+func PrepareDatabase() {
+	if _, err := os.Stat("borpa-data"); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		println("no data")
+	}
+	f, error := os.OpenFile("borpa-data/sql.db", os.O_CREATE, 0666)
+	f.Close()
+	if error != nil {
+		log.Println("error creating db file", error)
+	}
+	database, error := sql.Open("sqlite3", "borpa-data/sql.db")
+	if error != nil {
+		log.Println(error)
+	}
+	_, e := database.Exec("CREATE TABLE IF NOT EXISTS totals ( " +
 		"name	TEXT," +
 		"count	INTEGER," +
 		"PRIMARY KEY('name')" +
 		")")
-	statement.Exec()
+	// createStmt.Exec()
+	// createStmt.Close()
 
-	for key := range borpas {
-		statement, _ := database.Prepare("INSERT into totals (name, count) VALUES (?, ?)")
-		statement.Exec(key, 0)
+	if e != nil {
+		println(e)
 	}
+	log.Println("database opened!")
+	log.Println(borpas)
+	statement, er := database.Prepare("INSERT into totals (name, count) VALUES (?, ?)")
+	for key := range borpas {
+		log.Print(key)
+		if er != nil {
+			println(er.Error())
+		}
+		statement.Exec(key, 1)
+	}
+	statement.Close()
+	database.Close()
 }

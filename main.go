@@ -1,13 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/joho/godotenv"
@@ -27,14 +26,13 @@ func main() {
 	borpas["kachorpa"] = 0
 	borpas["moon2spin"] = 0
 	borpas["cum"] = 0
-
 	catalog := make([]string, 0, len(borpas))
 	for k := range borpas {
 		catalog = append(catalog, k)
 	}
 
 	if err := godotenv.Load(".env"); err != nil {
-		fmt.Print("env file not found, make sure this is on prod")
+		fmt.Println("env file not found, make sure this is on prod")
 	}
 
 	client := twitch.NewAnonymousClient()
@@ -80,19 +78,19 @@ func main() {
 	http.HandleFunc("/catalog", func(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte(strings.Join(catalog, ",")))
 	})
-	http.HandleFunc("/today", func(w http.ResponseWriter, r *http.Request) {
-		database, _ := sql.Open("sqlite3", "borp/sql.db")
-		defer database.Close()
+	// http.HandleFunc("/today", func(w http.ResponseWriter, r *http.Request) {
+	// 	database, _ := sql.Open("sqlite3", "data/borp/sql.db")
+	// 	defer database.Close()
 
-		rows, _ := database.Query("SELECT name, count from totals")
+	// 	rows, _ := database.Query("SELECT name, count from totals")
 
-		var name string
-		var count int
-		for rows.Next() {
-			rows.Scan(&name, &count)
-			w.Write([]byte(fmt.Sprintf("%s,%d", name, count)))
-		}
-	})
+	// 	var name string
+	// 	var count int
+	// 	for rows.Next() {
+	// 		rows.Scan(&name, &count)
+	// 		w.Write([]byte(fmt.Sprintf("%s,%d", name, count)))
+	// 	}
+	// })
 
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -100,28 +98,35 @@ func main() {
 		AllowedHeaders: []string{"a_custom_header", "content_type"},
 	}).Handler(http.DefaultServeMux)
 
-	ticker := time.NewTicker(60 * time.Second)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				// do stuff
-				WriteCache()
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
+	// ticker := time.NewTicker(60 * time.Second)
+	// quit := make(chan struct{})
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-ticker.C:
+	// 			// do stuff
+	// 			// WriteCache()
+	// 		case <-quit:
+	// 			ticker.Stop()
+	// 			return
+	// 		}
+	// 	}
+	// }()
 
-	test()
+	path, e := os.Getwd()
+	if e != nil {
+		log.Println(e)
+	}
+	fmt.Println(path)
+
+	PrepareDatabase()
 	print("Wtf")
 	err := http.ListenAndServe(":8081", handler)
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	print("wtf2")
 }
 
