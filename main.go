@@ -81,7 +81,7 @@ func main() {
 		rw.Write([]byte(strings.Join(catalog, ",")))
 	})
 	http.HandleFunc("/today", func(w http.ResponseWriter, r *http.Request) {
-		database, _ := sql.Open("sqlite3", "data/borp/sql.db")
+		database, _ := sql.Open("sqlite3", "borpa-data/sql.db")
 		defer database.Close()
 
 		rows, _ := database.Query("SELECT name, count from totals")
@@ -107,7 +107,7 @@ func main() {
 			select {
 			case <-ticker.C:
 				// do stuff
-				// WriteCache()
+				WriteCache()
 			case <-quit:
 				ticker.Stop()
 				return
@@ -123,7 +123,7 @@ func main() {
 
 	PrepareDatabase()
 	print("Wtf")
-	err := http.ListenAndServe(":8081", handler)
+	err := http.ListenAndServe(":80", handler)
 
 	if err != nil {
 		log.Fatal(err)

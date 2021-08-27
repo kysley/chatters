@@ -1,0 +1,7 @@
+version: '2'
+services:
+  go-web-app-two:
+    restart: always
+    build:
+      dockerfile: Dockerfile
+      context: .
