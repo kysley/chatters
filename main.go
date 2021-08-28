@@ -1,14 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
 	"github.com/joho/godotenv"
@@ -28,6 +26,10 @@ func main() {
 	borpas["kachorpa"] = 0
 	borpas["moon2spin"] = 0
 	borpas["cum"] = 0
+	borpas["corpa"] = 0
+	borpas["borpau"] = 0
+	borpas["cumdetected"] = 0
+
 	catalog := make([]string, 0, len(borpas))
 	for k := range borpas {
 		catalog = append(catalog, k)
@@ -48,10 +50,10 @@ func main() {
 
 			_, ok := borpas[lower]
 			if ok {
-				fmt.Printf("found %s \n", lower)
 				count++
 			}
 			if count > 0 {
+				AddOccurance(lower, count)
 				borpas[lower] += count
 				hub.broadcast <- []byte(strconv.Itoa(count))
 			}
@@ -71,7 +73,7 @@ func main() {
 	go hub.run()
 
 	http.HandleFunc("/", serveHome)
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/live", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
 	http.HandleFunc("/health", func(rw http.ResponseWriter, r *http.Request) {
@@ -80,10 +82,36 @@ func main() {
 	http.HandleFunc("/catalog", func(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte(strings.Join(catalog, ",")))
 	})
-	http.HandleFunc("/today", func(w http.ResponseWriter, r *http.Request) {
-		database, _ := sql.Open("sqlite3", "borpa-data/sql.db")
-		defer database.Close()
+	// http.HandleFunc("/midnight", func(rw http.ResponseWriter, r *http.Request) {
+	// 	WriteCache()
+	// })
+	http.HandleFunc("/history", func(rw http.ResponseWriter, r *http.Request) {
+		date := r.URL.Query().Get("day")
 
+		var table string
+		if date == "" {
+			table = "totals"
+		} else {
+			table = date
+		}
+
+		query := fmt.Sprintf(`SELECT name, count from '%s'`, table)
+		rows, err := database.Query(query)
+
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write([]byte("Don't have data for that date yo"))
+			return
+		}
+
+		var name string
+		var count int
+		for rows.Next() {
+			rows.Scan(&name, &count)
+			rw.Write([]byte(fmt.Sprintf("%s,%d \n", name, count)))
+		}
+	})
+	http.HandleFunc("/today", func(w http.ResponseWriter, r *http.Request) {
 		rows, _ := database.Query("SELECT name, count from totals")
 
 		var name string
@@ -100,21 +128,6 @@ func main() {
 		AllowedHeaders: []string{"a_custom_header", "content_type"},
 	}).Handler(http.DefaultServeMux)
 
-	ticker := time.NewTicker(60 * time.Second)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				// do stuff
-				WriteCache()
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
-
 	path, e := os.Getwd()
 	if e != nil {
 		log.Println(e)
@@ -122,6 +135,7 @@ func main() {
 	fmt.Println(path)
 
 	PrepareDatabase()
+	StartCron()
 	print("Wtf")
 	err := http.ListenAndServe(":80", handler)
 
