@@ -17,7 +17,7 @@ The intended deployment is on a vpc with Docker and nginx already running. I'm s
 
 `docker build . -t borpalive`
 
-`docker run -dit --name <container_name> -p 8081:80 borpalive`
+`docker run -dit --name <container_name> -p 8081:80 -v borpa-data:/usr/bin/borpa-data borpalive`
 
 This will bind 8080 in the docker container to 8081 on the machines localhost. Write a server block on your nginx config like the following
 
