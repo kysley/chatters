@@ -12,5 +12,6 @@ var (
 )
 
 func StartCron() {
-	cronHandler.AddFunc("@midnight", WriteCache)
+	cronHandler.AddFunc("0 0 0 * * *", func() { WriteCache() })
+	go cronHandler.Start()
 }
