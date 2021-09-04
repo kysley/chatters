@@ -18,7 +18,7 @@ var hub = newHub()
 // keeps track of the -daily- usage
 var borpas = make(map[string]int)
 
-// var addr = flag.String("addr", "localhost:8081", "http service address")
+var foundBorpas = make(map[string]int)
 
 func main() {
 	borpas["borpa"] = 0
@@ -50,12 +50,16 @@ func main() {
 
 			_, ok := borpas[lower]
 			if ok {
-				count++
-			}
-			if count > 0 {
-				AddOccurance(lower, count)
-				borpas[lower] += count
+				foundBorpas[lower] += 1
 				hub.broadcast <- []byte(strconv.Itoa(count))
+			}
+		}
+
+		for emote, count := range foundBorpas {
+			if count > 0 {
+				AddOccurance(emote, count)
+				borpas[emote] += count
+				foundBorpas[emote] = 0
 			}
 		}
 	})
@@ -82,9 +86,6 @@ func main() {
 	http.HandleFunc("/catalog", func(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte(strings.Join(catalog, ",")))
 	})
-	// http.HandleFunc("/midnight", func(rw http.ResponseWriter, r *http.Request) {
-	// 	WriteCache()
-	// })
 	http.HandleFunc("/history", func(rw http.ResponseWriter, r *http.Request) {
 		date := r.URL.Query().Get("day")
 
@@ -100,7 +101,7 @@ func main() {
 
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("Don't have data for that date yo"))
+			rw.Write([]byte("Don't have data for that date yo. Date format is ?day=dd-mm-yyyy"))
 			return
 		}
 
