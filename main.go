@@ -29,6 +29,7 @@ func main() {
 	borpas["corpa"] = 0
 	borpas["borpau"] = 0
 	borpas["cumdetected"] = 0
+	borpas["batchest"] = 0
 
 	catalog := make([]string, 0, len(borpas))
 	for k := range borpas {
