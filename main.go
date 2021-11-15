@@ -124,7 +124,7 @@ func main() {
 
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("Don't have data for that date yo. Date format is ?day=dd-mm-yyyy"))
+			rw.Write([]byte("Don't have data for that date yo. Date format is ?day=mm-dd-yyyy"))
 			return
 		}
 
@@ -170,7 +170,7 @@ func main() {
 
 	StartCron()
 	print("alldone")
-	err = http.ListenAndServe(":81", handler)
+	err = http.ListenAndServe("localhost:81", handler)
 
 	if err != nil {
 		log.Fatal(err)

@@ -12,6 +12,6 @@ var (
 )
 
 func StartCron() {
-	cronHandler.AddFunc("@midnight", func() { CacheWrite() })
+	cronHandler.AddFunc("@every 10m", func() { CacheWrite() })
 	go cronHandler.Start()
 }

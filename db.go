@@ -18,8 +18,8 @@ func Today() string {
 func CacheWrite() {
 	log.Print("Writing cache to database")
 	_, e := database.Exec("CREATE TABLE IF NOT EXISTS '" + Today() + "' (" +
-		"name	TEXT," +
-		"count	INTEGER," +
+		"name TEXT," +
+		"count INTEGER," +
 		"PRIMARY KEY('name')" +
 		")")
 
