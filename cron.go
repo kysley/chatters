@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	location, _ = time.LoadLocation("America/New_York")
-	cronHandler = cron.New(cron.WithLocation(location))
+	cronHandler = cron.New(cron.WithLocation(time.UTC))
 )
 
 func StartCron() {
