@@ -11,5 +11,5 @@ FROM alpine:3.13
 RUN apk --no-cache add ca-certificates
 WORKDIR /usr/bin
 COPY --from=build /go/src/app/bin /go/bin
-EXPOSE 8085
-ENTRYPOINT /go/bin/chatters --port 8085
+EXPOSE 8082
+ENTRYPOINT /go/bin/chatters
