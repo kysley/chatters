@@ -11,6 +11,6 @@ var (
 )
 
 func StartCron() {
-	cronHandler.AddFunc("@every 10m", func() { CacheWrite() })
+	cronHandler.AddFunc("@every 10m", func() { emoteCache.Write() })
 	go cronHandler.Start()
 }

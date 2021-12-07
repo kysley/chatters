@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gempir/go-twitch-irc/v2"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"github.com/rs/cors"
 )
 
 type BTTVUserResponse struct {
@@ -37,7 +36,7 @@ type BTTVUserResponse struct {
 
 var hub = newHub()
 
-var emoteCache = make(map[string]int)
+var emoteCache = NewEmoteCache()
 
 var foundEmoteCache = make(map[string]int)
 
@@ -45,6 +44,7 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		fmt.Println("env file not found, make sure this is on prod")
 	}
+	router := mux.NewRouter()
 
 	client := twitch.NewAnonymousClient()
 
@@ -53,7 +53,7 @@ func main() {
 
 		for _, word := range words {
 			// count := 0
-			_, ok := emoteCache[word]
+			_, ok := emoteCache.cache[word]
 			if ok {
 				foundEmoteCache[word] += 1
 				// hub.broadcast <- []byte(strconv.Itoa(count))
@@ -62,9 +62,8 @@ func main() {
 
 		for emote, count := range foundEmoteCache {
 			if count > 0 {
-				// AddOccurance(emote, count)
 				log.Printf("Adding %d to %s", count, emote)
-				emoteCache[emote] += count
+				emoteCache.cache[emote] += count
 				foundEmoteCache[emote] = 0
 			}
 		}
@@ -82,77 +81,41 @@ func main() {
 
 	go hub.run()
 
-	http.HandleFunc("/", serveHome)
-	http.HandleFunc("/live", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
-	})
-	http.HandleFunc("/health", func(rw http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/today", HandleToday).Methods("GET")
+	router.HandleFunc("/history", HandleHistory).Methods("GET")
+
+	// http.HandleFunc("/", serveHome)
+
+	// http.HandleFunc("/live", func(w http.ResponseWriter, r *http.Request) {
+	// 	serveWs(hub, w, r)
+	// })
+	router.HandleFunc("/health", func(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusOK)
 	})
-	// http.HandleFunc("/catalog", func(rw http.ResponseWriter, r *http.Request) {
-	// 	rw.Write([]byte(strings.Join(catalog, ",")))
+
+	// http.HandleFunc("/test", func(rw http.ResponseWriter, r *http.Request) {
+	// 	res, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/121059319")
+	// 	if err != nil {
+	// 		log.Fatal("coulnt get bttv res")
+	// 	}
+	// 	defer res.Body.Close()
+
+	// 	var dat BTTVUserResponse
+
+	// 	if err := json.NewDecoder(res.Body).Decode(&dat); err != nil {
+	// 		log.Fatal("json sucks")
+	// 	}
+
+	// 	emoteCache.Load(dat)
+
+	// 	fmt.Print(dat.ChannelEmotes[0])
 	// })
-	http.HandleFunc("/test", func(rw http.ResponseWriter, r *http.Request) {
-		res, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/121059319")
-		if err != nil {
-			log.Fatal("coulnt get bttv res")
-		}
-		defer res.Body.Close()
 
-		var dat BTTVUserResponse
-
-		if err := json.NewDecoder(res.Body).Decode(&dat); err != nil {
-			log.Fatal("json sucks")
-		}
-
-		CacheLoad(dat)
-
-		fmt.Print(dat.ChannelEmotes[0])
-	})
-	http.HandleFunc("/history", func(rw http.ResponseWriter, r *http.Request) {
-		date := r.URL.Query().Get("day")
-
-		var table string
-		if date == "" {
-			// table = "totals"
-		} else {
-			table = date
-		}
-
-		query := fmt.Sprintf(`SELECT name, count from '%s'`, table)
-		rows, err := database.Query(query)
-
-		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte("Don't have data for that date yo. Date format is ?day=mm-dd-yyyy"))
-			return
-		}
-
-		var name string
-		var count int
-		for rows.Next() {
-			rows.Scan(&name, &count)
-			rw.Write([]byte(fmt.Sprintf("%s,%d \n", name, count)))
-		}
-	})
-
-	http.HandleFunc("/today", func(rw http.ResponseWriter, r *http.Request) {
-		for emote, count := range emoteCache {
-			rw.Write([]byte(fmt.Sprintf("%s,%d \n", emote, count)))
-		}
-	})
-
-	handler := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "PATCH"},
-		AllowedHeaders: []string{"a_custom_header", "content_type"},
-	}).Handler(http.DefaultServeMux)
-
-	path, e := os.Getwd()
-	if e != nil {
-		log.Println(e)
-	}
-	fmt.Println(path)
+	// handler := cors.New(cors.Options{
+	// 	AllowedOrigins: []string{"*"},
+	// 	AllowedMethods: []string{"GET", "POST", "PATCH"},
+	// 	AllowedHeaders: []string{"a_custom_header", "content_type"},
+	// }).Handler(http.DefaultServeMux)
 
 	res, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/121059319")
 	if err != nil {
@@ -166,11 +129,11 @@ func main() {
 		log.Fatal("json sucks")
 	}
 
-	CacheLoad(dat)
+	emoteCache.Load(dat)
 
 	StartCron()
 	print("alldone")
-	err = http.ListenAndServe(":8082", handler)
+	err = http.ListenAndServe(":8082", router)
 
 	if err != nil {
 		log.Fatal(err)

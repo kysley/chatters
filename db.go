@@ -2,8 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -13,70 +11,6 @@ var database, _ = sql.Open("sqlite3", "chatters-data/sql.db")
 
 func Today() string {
 	return time.Now().Format("01-02-2006")
-}
-
-func CacheWrite() {
-	log.Print("Writing cache to database")
-	_, e := database.Exec("CREATE TABLE IF NOT EXISTS '" + Today() + "' (" +
-		"name TEXT," +
-		"count INTEGER," +
-		"PRIMARY KEY('name')" +
-		")")
-
-	statement, er := database.Prepare("INSERT into '" + Today() + "' (name, count) VALUES (?, ?)")
-	for key := range emoteCache {
-		log.Print(key)
-		if er != nil {
-			println(er.Error())
-		}
-		statement.Exec(key, 0)
-	}
-	statement.Close()
-
-	if e != nil {
-		log.Println("Error creating daily table" + e.Error())
-	}
-
-	for key, count := range emoteCache {
-		if count > 0 {
-			log.Printf("Writing emote: %s", key)
-			query := fmt.Sprintf("UPDATE '%s' SET count = count + %d WHERE name = '%s'", Today(), count, key)
-			statement, error := database.Prepare(query)
-			statement.Exec()
-
-			if error != nil {
-				log.Printf("Failed to update %s", key)
-			}
-		}
-	}
-	CacheReset()
-}
-
-func CacheReset() {
-	log.Print("Clearing cache")
-
-	for key := range emoteCache {
-		emoteCache[key] = 0
-	}
-}
-
-func CacheLoad(dat BTTVUserResponse) {
-	for _, val := range dat.ChannelEmotes {
-		_, ok := emoteCache[val.Code]
-
-		if !ok {
-			emoteCache[val.Code] = 0
-		}
-	}
-
-	for _, val := range dat.SharedEmotes {
-		_, ok := emoteCache[val.Code]
-
-		if !ok {
-			emoteCache[val.Code] = 0
-		}
-
-	}
 }
 
 // func PrepareDatabase() {
