@@ -9,7 +9,7 @@ chatters is pretty simple. The backend connects to chat via IRC, and broadcasts 
 To get going on your own,
 ```bash
 > cd chatters
-> go run ./ #should open to localhost:81
+> go run ./    # localhost:8082
 ```
 
 ## Deployment
@@ -17,18 +17,18 @@ The intended deployment is on a vpc with Docker and nginx already running. I'm s
 
 `docker build . -t chatters`
 
-`docker run -dit --name <container_name> -p 8081:81 -v chatters-data:/usr/bin/chatters-data chatters`
+`docker run -dit --name chattrs -p 8082:8082 -v chatters-data:/usr/bin/chatters-data chatters`
 
-This will bind 81 in the docker container to 8081 on the machines localhost. Write a server block on your nginx config like the following
+This will bind 8082 in the docker container to 8082 on your machines localhost (-p <nginx proxy port>:<port used in app>). Write a server block on your nginx config like the following
 
 ```
 server {
-  listen 81;
-  server_name <your.url.here>;
+        listen 80;
+        server_name chatters.e8y.fun;
 
-  location / {
-    proxy_pass http://localhost:8081;
-  }
+        location / {
+                proxy_pass http://localhost:8082;
+        }
 }
 ```
 and hopefully it runs :)
