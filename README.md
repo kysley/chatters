@@ -19,7 +19,7 @@ The intended deployment is on a vpc with Docker and nginx already running. I'm s
 
 `docker run -dit --name chattrs -p 8082:8082 -v chatters-data:/usr/bin/chatters-data chatters`
 
-This will bind 8082 in the docker container to 8082 on your machines localhost (-p <nginx proxy port>:<port used in app>). Write a server block on your nginx config like the following
+This will bind 8082 in the docker container to 8082 on your machines localhost (-p \<nginx proxy port\>:\<port used in app\>). Write a server block on your nginx config like the following
 
 ```
 server {
