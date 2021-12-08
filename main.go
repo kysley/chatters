@@ -34,9 +34,11 @@ type BTTVUserResponse struct {
 	} `json:"sharedEmotes"`
 }
 
-var hub = newHub()
+// var hub = newHub()
 
 var emoteCache = NewEmoteCache()
+
+var dbc = NewDatabaseController()
 
 var foundEmoteCache = make(map[string]int)
 
@@ -79,37 +81,16 @@ func main() {
 		}
 	}()
 
-	go hub.run()
+	// go hub.run()
 
 	router.HandleFunc("/today", HandleToday).Methods("GET")
 	router.HandleFunc("/history", HandleHistory).Methods("GET")
 
-	// http.HandleFunc("/", serveHome)
-
-	// http.HandleFunc("/live", func(w http.ResponseWriter, r *http.Request) {
-	// 	serveWs(hub, w, r)
-	// })
 	router.HandleFunc("/health", func(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusOK)
 	})
 
-	// http.HandleFunc("/test", func(rw http.ResponseWriter, r *http.Request) {
-	// 	res, err := http.Get("https://api.betterttv.net/3/cached/users/twitch/121059319")
-	// 	if err != nil {
-	// 		log.Fatal("coulnt get bttv res")
-	// 	}
-	// 	defer res.Body.Close()
-
-	// 	var dat BTTVUserResponse
-
-	// 	if err := json.NewDecoder(res.Body).Decode(&dat); err != nil {
-	// 		log.Fatal("json sucks")
-	// 	}
-
-	// 	emoteCache.Load(dat)
-
-	// 	fmt.Print(dat.ChannelEmotes[0])
-	// })
+	http.Handle("/", router)
 
 	// handler := cors.New(cors.Options{
 	// 	AllowedOrigins: []string{"*"},
@@ -130,6 +111,7 @@ func main() {
 	}
 
 	emoteCache.Load(dat)
+	dbc.CreateTodaysTable()
 
 	StartCron()
 	print("alldone")
@@ -137,17 +119,5 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
 	}
 }

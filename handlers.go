@@ -36,8 +36,7 @@ func HandleToday(rw http.ResponseWriter, r *http.Request) {
 }
 
 func HandleHistory(rw http.ResponseWriter, r *http.Request) {
-	date := r.URL.Query().Get("day")
-	// date2 := mux.Vars(r)["day"]
+	date := r.URL.Query().Get("date")
 
 	table := date
 
@@ -48,7 +47,7 @@ func HandleHistory(rw http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("Don't have data for that date yo. Date format is ?day=mm-dd-yyyy"))
+		rw.Write([]byte("Don't have data for that date yo. Date format is ?date=mm-dd-yyyy"))
 		return
 	}
 	defer rows.Close()

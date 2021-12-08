@@ -42,21 +42,10 @@ func (c *EmoteCache) Load(dat BTTVUserResponse) {
 
 func (c *EmoteCache) Write() {
 	log.Print("Writing cache to database")
-	_, e := database.Exec("CREATE TABLE IF NOT EXISTS '" + Today() + "' (" +
-		"name TEXT," +
-		"count INTEGER," +
-		"PRIMARY KEY('name')" +
-		")")
-	for key := range emoteCache.cache {
-		_, er := database.Exec("INSERT into '"+Today()+"' (name, count) VALUES ($1, $2) returning count", key, 0)
-		if er != nil {
-			println(er.Error())
-		}
-	}
 
-	if e != nil {
-		log.Println("Error creating daily table" + e.Error())
-	}
+	dbc.CreateTodaysTable()
+
+	dbc.PopulateRows(c.cache)
 
 	for key, count := range emoteCache.cache {
 		if count > 0 {
