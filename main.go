@@ -54,7 +54,6 @@ func main() {
 		words := strings.Fields(message.Message)
 
 		for _, word := range words {
-			// count := 0
 			_, ok := emoteCache.cache[word]
 			if ok {
 				foundEmoteCache[word] += 1
@@ -65,7 +64,7 @@ func main() {
 		for emote, count := range foundEmoteCache {
 			if count > 0 {
 				log.Printf("Adding %d to %s", count, emote)
-				emoteCache.cache[emote] += count
+				dbc.AddEmoteOccurance(emote, count)
 				foundEmoteCache[emote] = 0
 			}
 		}
@@ -112,8 +111,8 @@ func main() {
 
 	emoteCache.Load(dat)
 	dbc.CreateTodaysTable()
+	dbc.PopulateRows(emoteCache.cache)
 
-	StartCron()
 	print("alldone")
 	err = http.ListenAndServe(":8082", router)
 

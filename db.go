@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -38,13 +39,13 @@ func (c *DatabaseController) CreateTodaysTable() {
 
 func (c *DatabaseController) PopulateRows(cache map[string]int) {
 	for key := range cache {
-		database.Exec(`INSERT OR IGNORE INTO $1 (name, count) VALUES ($2, $3) returning count`, Today(), key, 0)
+		database.Exec(fmt.Sprintf(`INSERT OR IGNORE INTO '%s' (name, count) VALUES ($2, $3)`, Today()), key, 0)
 	}
 }
 
 func (c *DatabaseController) AddEmoteOccurance(key string, count int) {
 	log.Printf("Adding %d to %s", count, key)
-	_, err := c.db.Exec(`UPDATE $1 SET count = count + $2 WHERE name = $3`, Today(), count, key)
+	_, err := c.db.Exec(fmt.Sprintf(`UPDATE '%s' SET count = count + $2 WHERE name = $3`, Today()), count, key)
 
 	if err != nil {
 		log.Printf("ERROR Adding %d to %s", count, key)
