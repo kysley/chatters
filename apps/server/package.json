@@ -1,0 +1,24 @@
+{
+  "name": "chatters-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Evan Kysley",
+  "license": "MIT",
+  "scripts": {
+    "tsc": "tsc",
+    "start:prod": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.5",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.10",
+    "fastify": "^3.27.0",
+    "fastify-cors": "^6.0.2",
+    "puppeteer": "^13.1.2",
+    "socket.io": "^4.4.1"
+  }
+}
