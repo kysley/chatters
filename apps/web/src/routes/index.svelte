@@ -4,9 +4,9 @@
 	import io, { Socket } from 'socket.io-client';
 	import { ChattersEventPayload, ChattersEventType, ChattersServerEvents } from 'types';
 
-	let arr: ChattersEventPayload['EMOTE'][] = [];
+	export const prerender = true;
 
-	const name = import.meta.env.MODE;
+	let arr: ChattersEventPayload['EMOTE'][] = [];
 
 	const socketUrl =
 		import.meta.env.MODE === 'production'
