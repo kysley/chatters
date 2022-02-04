@@ -41,6 +41,7 @@ const start = async () => {
       cors: {
         origin: ["http://localhost:3000", "https://chatters.e8y.fun"],
       },
+      path: "/chatters/socket.io",
     });
 
     io.on("connection", () => console.log("socket connection"));

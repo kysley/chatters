@@ -13,7 +13,7 @@
 			? 'https://api.e8y.fun/chatters/'
 			: 'http://localhost:3610';
 
-	const socket: Socket<ChattersServerEvents> = io(socketUrl);
+	const socket: Socket<ChattersServerEvents> = io(socketUrl, { path: '/chatters/socket.io' });
 
 	$: last = null;
 	$: combo = 0;
@@ -33,7 +33,7 @@
 <h1>Welcome to chatters</h1>
 <p>Visit <a href="https://twitch.tv/moonmoon">twitch.tv/moonmoon</a></p>
 
-{#if combo !== 1}
+{#if combo > 1}
 	COMBO {combo} x {last?.name}
 {/if}
 <ul>
