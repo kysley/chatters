@@ -36,7 +36,7 @@ fastify.get("/", async (req: PeerManagerGetRequest, res) => {
 
 const start = async () => {
   try {
-    await fastify.listen(3600);
+    await fastify.listen(3610);
     io = new Server(fastify.server, {
       cors: {
         origin: ["http://localhost:3000", "https://chatters.e8y.fun"],
