@@ -9,9 +9,7 @@
 	let arr: ChattersEventPayload['EMOTE'][] = [];
 
 	const socketUrl =
-		import.meta.env.MODE === 'production'
-			? 'https://api.e8y.fun/chatters/'
-			: 'http://localhost:3610';
+		import.meta.env.MODE === 'production' ? 'https://api.e8y.fun' : 'http://localhost:3610';
 
 	const socket: Socket<ChattersServerEvents> = io(socketUrl, { path: '/chatters/socket.io' });
 
