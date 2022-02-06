@@ -2,40 +2,58 @@
 	import { fade, fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import io, { Socket } from 'socket.io-client';
-	import { ChattersEventPayload, ChattersEventType, ChattersServerEvents } from 'types';
+	import {
+		ChattersEventPayload,
+		ChattersEventType,
+		ChattersServerEvents,
+		FourPieceState
+	} from 'types';
 
 	export const prerender = true;
-
-	let arr: ChattersEventPayload['EMOTE'][] = [];
 
 	const socketUrl =
 		import.meta.env.MODE === 'production' ? 'https://api.e8y.fun' : 'http://localhost:3610';
 
 	const socket: Socket<ChattersServerEvents> = io(socketUrl, { path: '/chatters/socket.io' });
 
-	$: last = null;
-	$: combo = 0;
-	$: combos = [] as Array<[string, number]>;
+	$: occurances = [] as ChattersEventPayload['EMOTE'][];
 	socket.on(ChattersEventType.EMOTE, (payload) => {
-		if (last?.name === payload.name) {
-			combo += 1;
-			// combos = [...combos, [payload.name]]
-		} else {
-			combo = 1;
+		occurances = [payload, ...occurances];
+	});
+
+	let combo: { name: string; count: number };
+	$: combo;
+	socket.on(ChattersEventType.COMBO, (payload) => {
+		if (payload === 'CLEAR') {
+			combo = undefined;
+			return;
 		}
-		last = payload;
-		arr = [payload, ...arr];
+		combo = payload;
+	});
+
+	let fourPiece: FourPieceState;
+	$: fourPiece;
+	socket.on(ChattersEventType.FOUR_PIECE, (payload) => {
+		if (payload === 'CLEAR') {
+			fourPiece = undefined;
+			return;
+		}
+		fourPiece = payload;
 	});
 </script>
 
 <h1>Welcome to chatters</h1>
 <p>Visit <a href="https://twitch.tv/moonmoon">twitch.tv/moonmoon</a></p>
 
-{#if combo > 1}
-	COMBO {combo} x {last?.name}
+{#if combo}
+	COMBO {combo.name} x {combo.count}
+{/if}
+
+{#if fourPiece}
+	{fourPiece.emote} combo! nice Clap :) {fourPiece.user}. You have {fourPiece.claps}.
 {/if}
 <ul>
-	{#each arr as emoteItem (emoteItem)}
+	{#each occurances as emoteItem (emoteItem)}
 		<li in:fade out:fly={{ x: 100 }}>{emoteItem.name} x {emoteItem.count}</li>
 	{/each}
 </ul>
