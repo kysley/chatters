@@ -1,3 +1,2 @@
-// module.exports = require("config/eslint-preset");
-import eslintPreset from "config/eslint-preset";
-module.exports = eslintPreset;
+// eslint-disable-next-line no-undef
+module.exports = require("config/eslint-preset");
