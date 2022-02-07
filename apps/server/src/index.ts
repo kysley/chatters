@@ -5,7 +5,7 @@ import { Server } from "socket.io";
 
 import { BTTVUserResponse } from "types";
 import { runTmi } from "./tmi";
-import { emoteSet } from "./utils";
+import { emoteMap } from "./utils";
 
 export const fastify = Fastify({
   trustProxy: true,
@@ -51,11 +51,11 @@ const start = async () => {
       .json<BTTVUserResponse>();
 
     for (const emote of channelEmotes) {
-      emoteSet.add(emote.code);
+      emoteMap.set(emote.code, emote);
     }
 
     for (const emote of sharedEmotes) {
-      emoteSet.add(emote.code);
+      emoteMap.set(emote.code, emote);
     }
 
     await runTmi(io);

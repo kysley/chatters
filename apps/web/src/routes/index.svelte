@@ -1,13 +1,8 @@
 <script lang="ts">
-	import { fade, fly } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
+	import { fade } from 'svelte/transition';
 	import io, { Socket } from 'socket.io-client';
-	import {
-		ChattersEventPayload,
-		ChattersEventType,
-		ChattersServerEvents,
-		FourPieceState
-	} from 'types';
+	import { ChattersEventType, ChattersServerEvents, EmoteAndCount, FourPieceState } from 'types';
+	import Emote from '../components/Emote.svelte';
 
 	export const prerender = true;
 
@@ -16,16 +11,19 @@
 
 	const socket: Socket<ChattersServerEvents> = io(socketUrl, { path: '/chatters/socket.io' });
 
-	$: occurances = [] as ChattersEventPayload['EMOTE'][];
+	$: occurances = [] as EmoteAndCount[];
 	socket.on(ChattersEventType.EMOTE, (payload) => {
+		console.log(payload);
 		occurances = [payload, ...occurances];
 	});
 
-	let combo: { name: string; count: number };
+	let combo: EmoteAndCount;
 	$: combo;
 	socket.on(ChattersEventType.COMBO, (payload) => {
 		if (payload === 'CLEAR') {
-			combo = undefined;
+			setTimeout(() => {
+				combo = undefined;
+			}, 1000 * 3);
 			return;
 		}
 		combo = payload;
@@ -46,7 +44,7 @@
 <p>Visit <a href="https://twitch.tv/moonmoon">twitch.tv/moonmoon</a></p>
 
 {#if combo}
-	COMBO {combo.name} x {combo.count}
+	COMBO {combo.emote.code} x {combo.count}
 {/if}
 
 {#if fourPiece}
@@ -54,6 +52,8 @@
 {/if}
 <ul>
 	{#each occurances as emoteItem (emoteItem)}
-		<li in:fade out:fly={{ x: 100 }}>{emoteItem.name} x {emoteItem.count}</li>
+		<div in:fade>
+			<Emote emote={emoteItem.emote} /> x {emoteItem.count}
+		</div>
 	{/each}
 </ul>

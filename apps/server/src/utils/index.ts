@@ -1,4 +1,6 @@
-export const emoteSet = new Set<string>();
+import { Emote } from "types";
+
+export const emoteMap = new Map<string, Emote>();
 
 export const isFourPiece = (prev: string, next: string) => {
   if (!prev || !next) return;

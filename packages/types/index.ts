@@ -14,10 +14,17 @@ export type BTTVUserResponse = {
   }[];
 };
 
+export type Emote = Omit<BTTVUserResponse["channelEmotes"][number], "userId">;
+
+export type EmoteAndCount = {
+  emote: Emote;
+  count: number;
+};
+
 export type FourPieceState = {
   claps: number;
   user: string;
-  emote: string;
+  emote: Emote;
 };
 
 export enum ChattersEventType {
@@ -27,9 +34,9 @@ export enum ChattersEventType {
 }
 
 export type ChattersEventPayload = {
-  [ChattersEventType.EMOTE]: { name: string; count: number };
+  [ChattersEventType.EMOTE]: EmoteAndCount;
   [ChattersEventType.FOUR_PIECE]: FourPieceState | "CLEAR";
-  [ChattersEventType.COMBO]: { name: string; count: number } | "CLEAR";
+  [ChattersEventType.COMBO]: EmoteAndCount | "CLEAR";
 };
 
 export interface ChattersServerEvents {

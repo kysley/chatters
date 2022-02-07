@@ -1,13 +1,9 @@
 import { ChattersEventPayload } from "types";
 
 export function createEmoteEvent(
-  name: string,
-  count: number
+  payload: ChattersEventPayload["EMOTE"]
 ): ChattersEventPayload["EMOTE"] {
-  return {
-    name,
-    count,
-  };
+  return payload;
 }
 
 export function createFPEvent(

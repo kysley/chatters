@@ -3,7 +3,7 @@ import tmi from "tmi.js";
 import { FourPieceState } from "types";
 
 import { createComboEvent, createEmoteEvent, createFPEvent } from "./events";
-import { emoteSet, isFourPiece } from "./utils";
+import { emoteMap, isFourPiece } from "./utils";
 
 const twitchClient = new tmi.Client({
   options: { debug: true },
@@ -53,7 +53,7 @@ class MessageController {
       this.countFourPieceApplause = true;
       this.fpState = {
         claps: 0,
-        emote: fourPieceEmote,
+        emote: emoteMap.get(fourPieceEmote)!,
         user: tags.username || "???",
       };
 
@@ -73,7 +73,7 @@ class MessageController {
 
     const occurances: Record<string, number> = {};
     for (const word of words) {
-      if (emoteSet.has(word)) {
+      if (emoteMap.has(word)) {
         if (occurances[word]) {
           occurances[word]++;
         } else {
@@ -85,7 +85,10 @@ class MessageController {
     const occuranceKeys = Object.keys(occurances);
 
     for (const key of occuranceKeys) {
-      const event = createEmoteEvent(key, occurances[key]);
+      const event = createEmoteEvent({
+        emote: emoteMap.get(key)!,
+        count: occurances[key],
+      });
       this.ioEmit("EMOTE", event);
     }
 
@@ -94,23 +97,29 @@ class MessageController {
       this.prevMsg === message ||
       (occuranceKeys.length === 1 && occuranceKeys[0] === this?.comboEmote);
     if (isCombo) {
-      this.comboEmote = this.prevMsg === message ? message : occuranceKeys[0];
-      this.combo++;
-      console.log(this.combo);
-      if (this.combo > 1) {
-        this.ioEmit(
-          "COMBO",
-          createComboEvent({ count: this.combo, name: this.comboEmote })
-        );
+      const repeatedEmote =
+        this.prevMsg === message ? message : occuranceKeys[0];
+      if (emoteMap.has(repeatedEmote)) {
+        this.combo++;
+        this.comboEmote = repeatedEmote;
+        if (this.combo > 1) {
+          this.ioEmit(
+            "COMBO",
+            createComboEvent({
+              count: this.combo,
+              emote: emoteMap.get(repeatedEmote)!,
+            })
+          );
+        }
       }
       // Emote/message does not count towards
     } else if (!isCombo && this.combo > 1) {
       this.ioEmit("COMBO", createComboEvent("CLEAR"));
       this.combo = 1;
-      this.comboEmote = occuranceKeys.length === 1 ? occuranceKeys[0] : message;
+      this.comboEmote = undefined;
     } else {
       this.combo = 1;
-      this.comboEmote = occuranceKeys.length === 1 ? occuranceKeys[0] : message;
+      this.comboEmote = undefined;
     }
 
     this.prevMsg = message;
