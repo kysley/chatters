@@ -2,7 +2,13 @@
 	import { fade } from 'svelte/transition';
 	import io, { Socket } from 'socket.io-client';
 	import { ChattersEventType, ChattersServerEvents, EmoteAndCount, FourPieceState } from 'types';
+	import lru from 'tiny-lru';
+
 	import Emote from '../components/Emote.svelte';
+
+	let occuranceLru = lru<EmoteAndCount>(10, 15 * 1000);
+
+	$: keys = [];
 
 	export const prerender = true;
 
@@ -13,8 +19,17 @@
 
 	$: occurances = [] as EmoteAndCount[];
 	socket.on(ChattersEventType.EMOTE, (payload) => {
-		console.log(payload);
-		occurances = [payload, ...occurances];
+		// console.log(payload);
+		// occurances = [payload, ...occurances];
+
+		const lruItem = occuranceLru.get(payload.emote.id);
+		if (lruItem) {
+			occuranceLru.set(payload.emote.id, { ...lruItem, count: lruItem.count + payload.count });
+		} else {
+			occuranceLru.set(payload.emote.id, payload);
+		}
+
+		keys = occuranceLru.keys();
 	});
 
 	let combo: EmoteAndCount;
@@ -44,16 +59,21 @@
 <p>Visit <a href="https://twitch.tv/moonmoon">twitch.tv/moonmoon</a></p>
 
 {#if combo}
-	COMBO {combo.emote.code} x {combo.count}
+	COMBO <Emote emote={combo.emote} /> x {combo.count}
 {/if}
 
 {#if fourPiece}
 	{fourPiece.emote} combo! nice Clap :) {fourPiece.user}. You have {fourPiece.claps}.
 {/if}
 <ul>
-	{#each occurances as emoteItem (emoteItem)}
-		<div in:fade>
-			<Emote emote={emoteItem.emote} /> x {emoteItem.count}
-		</div>
-	{/each}
+	{#if keys.length}
+		{#each keys as emoteItem}
+			{@const emoteLru = occuranceLru.get(emoteItem)}
+			{#if emoteLru}
+				<div in:fade>
+					<Emote emote={emoteLru.emote} /> x {emoteLru.count}
+				</div>
+			{/if}
+		{/each}
+	{/if}
 </ul>
