@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
+	import { expoIn } from 'svelte/easing';
 	import io, { Socket } from 'socket.io-client';
 	import { ChattersEventType, ChattersServerEvents, EmoteAndCount, FourPieceState } from 'types';
 	import lru from 'tiny-lru';
@@ -53,6 +53,19 @@
 		}
 		fourPiece = payload;
 	});
+
+	function pop(node, { duration }) {
+		return {
+			duration,
+			css: (t) => {
+				const eased = expoIn(t) + 1;
+
+				return `
+					transform: scale(${eased});
+			`;
+			}
+		};
+	}
 </script>
 
 <h1>Welcome to chatters</h1>
@@ -65,15 +78,19 @@
 {#if fourPiece}
 	{fourPiece.emote} combo! nice Clap :) {fourPiece.user}. You have {fourPiece.claps}.
 {/if}
-<ul>
-	{#if keys.length}
-		{#each keys as emoteItem}
-			{@const emoteLru = occuranceLru.get(emoteItem)}
-			{#if emoteLru}
-				<div in:fade>
-					<Emote emote={emoteLru.emote} /> x {emoteLru.count}
-				</div>
-			{/if}
-		{/each}
-	{/if}
-</ul>
+
+{#if keys.length}
+	{#each keys as emoteItem}
+		{@const emoteLru = occuranceLru.get(emoteItem)}
+		{#if emoteLru}
+			<div style="display: flex; align-items: flex-end;">
+				{#key emoteLru.count}
+					<div in:pop={{ duration: 200 }}>
+						<Emote emote={emoteLru.emote} />
+					</div>
+				{/key}
+				{emoteLru.count + 'x'}
+			</div>
+		{/if}
+	{/each}
+{/if}
