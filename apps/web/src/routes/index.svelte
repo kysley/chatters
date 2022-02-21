@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { expoIn } from 'svelte/easing';
+	import { fade, fly } from 'svelte/transition';
 	import io, { Socket } from 'socket.io-client';
 	import { ChattersEventType, ChattersServerEvents, EmoteAndCount, FourPieceState } from 'types';
 	import lru from 'tiny-lru';
@@ -80,17 +81,21 @@
 {/if}
 
 {#if keys.length}
-	{#each keys as emoteItem}
-		{@const emoteLru = occuranceLru.get(emoteItem)}
-		{#if emoteLru}
-			<div style="display: flex; align-items: flex-end;">
-				{#key emoteLru.count}
-					<div in:pop={{ duration: 200 }}>
-						<Emote emote={emoteLru.emote} />
-					</div>
-				{/key}
-				{emoteLru.count + 'x'}
-			</div>
-		{/if}
-	{/each}
+	<div style="display: flex; flex-direction: column; gap: 0.5rem;">
+		{#each keys as emoteItem}
+			{@const emoteLru = occuranceLru.get(emoteItem)}
+			{#if emoteLru}
+				<div style="display: flex; align-items: flex-end; gap: 0.25rem;">
+					{#key emoteLru.count}
+						<div in:pop={{ duration: 200 }} style="height: {emoteLru.count * 2 + 50}px;">
+							<Emote emote={emoteLru.emote} />
+						</div>
+						<div in:fly={{ x: 10, duration: 100 }} style="font-size: {0.7 + emoteLru.count / 8}rem">
+							{emoteLru.count + 'x'}
+						</div>
+					{/key}
+				</div>
+			{/if}
+		{/each}
+	</div>
 {/if}
