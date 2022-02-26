@@ -1,6 +1,6 @@
 // import adapter from '@sveltejs/adapter-auto';
-// import adapter from '@sveltejs/adapter-netlify';
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-netlify';
+// import adapter from '@sveltejs/adapter-static';
 
 import preprocess from 'svelte-preprocess';
 
