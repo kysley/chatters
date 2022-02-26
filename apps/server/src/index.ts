@@ -21,29 +21,13 @@ fastify.register(mercurius, {
   schema,
   // context: (req) => req.ctx,
   graphiql: true,
+  path: "/chatters/graphql",
 });
 
 let io: Server;
 
-fastify.get("/health", (_req, res) => {
+fastify.get("/chatters/health", (_req, res) => {
   res.code(200).send({ statusCode: 200, status: "ok" });
-});
-
-type PeerManagerGetRequest = FastifyRequest<{
-  Querystring: {
-    search: string;
-  };
-}>;
-fastify.get("/", async (req: PeerManagerGetRequest, res) => {
-  const { search } = req.query;
-  if (!search) return res.status(404).send();
-
-  const uri = encodeURI(search.toLowerCase());
-
-  // if (cache.has(uri)) {
-  //   res.send(cache.get(uri));
-  //   return;
-  // }
 });
 
 const start = async () => {
