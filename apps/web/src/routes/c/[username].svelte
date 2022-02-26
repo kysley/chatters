@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import Emote from '../../components/Emote.svelte';
-	import { Chain } from '../../zeus';
-
-	const chain = Chain('http://localhost:3610/graphql');
+	import { chain } from '../../utils';
 
 	let username = $page.params.username;
 

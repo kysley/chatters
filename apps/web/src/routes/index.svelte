@@ -6,15 +6,13 @@
 	import lru from 'tiny-lru';
 
 	import Emote from '../components/Emote.svelte';
+	import { socketUrl } from '../utils';
 
 	let occuranceLru = lru<EmoteAndCount>(10, 15 * 1000);
 
 	$: keys = [];
 
 	export const prerender = true;
-
-	const socketUrl =
-		import.meta.env.MODE === 'production' ? 'https://api.e8y.fun' : 'http://localhost:3610';
 
 	const socket: Socket<ChattersServerEvents> = io(socketUrl, { path: '/chatters/socket.io' });
 
