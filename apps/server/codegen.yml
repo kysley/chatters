@@ -1,0 +1,8 @@
+overwrite: true
+errorsOnly: true
+schema: build-schema.js
+# documents: './src/**/!(*.d).{ts,tsx}'
+generates:
+  schema.graphql:
+    plugins:
+      - schema-ast

@@ -1,4 +1,5 @@
 import { Emote } from "types";
+import { PrismaClient } from "@prisma/client";
 
 export const emoteMap = new Map<string, Emote>();
 
@@ -12,3 +13,5 @@ export const isFourPiece = (prev: string, next: string) => {
     }
   }
 };
+
+export const prisma = new PrismaClient();

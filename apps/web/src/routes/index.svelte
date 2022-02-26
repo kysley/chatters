@@ -18,11 +18,7 @@
 
 	const socket: Socket<ChattersServerEvents> = io(socketUrl, { path: '/chatters/socket.io' });
 
-	$: occurances = [] as EmoteAndCount[];
 	socket.on(ChattersEventType.EMOTE, (payload) => {
-		// console.log(payload);
-		// occurances = [payload, ...occurances];
-
 		const lruItem = occuranceLru.get(payload.emote.id);
 		if (lruItem) {
 			occuranceLru.set(payload.emote.id, { ...lruItem, count: lruItem.count + payload.count });

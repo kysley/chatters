@@ -1,11 +1,13 @@
 import Fastify, { FastifyRequest } from "fastify";
 import FastifyCors from "fastify-cors";
 import got from "got";
+import mercurius from "mercurius";
 import { Server } from "socket.io";
 
 import { BTTVUserResponse } from "types";
+import { schema } from "./schema";
 import { runTmi } from "./tmi";
-import { emoteMap } from "./utils";
+import { prisma, emoteMap } from "./utils";
 
 export const fastify = Fastify({
   trustProxy: true,
@@ -15,7 +17,17 @@ fastify.register(FastifyCors, {
   origin: ["http://localhost:3000", "https://chatters.e8y.fun"],
 });
 
+fastify.register(mercurius, {
+  schema,
+  // context: (req) => req.ctx,
+  graphiql: true,
+});
+
 let io: Server;
+
+fastify.get("/health", (_req, res) => {
+  res.code(200).send({ statusCode: 200, status: "ok" });
+});
 
 type PeerManagerGetRequest = FastifyRequest<{
   Querystring: {
@@ -50,13 +62,19 @@ const start = async () => {
       .get("https://api.betterttv.net/3/cached/users/twitch/121059319")
       .json<BTTVUserResponse>();
 
-    for (const emote of channelEmotes) {
+    const BTTVEmotes = [...channelEmotes, ...sharedEmotes];
+
+    for (const emote of BTTVEmotes) {
       emoteMap.set(emote.code, emote);
     }
 
-    for (const emote of sharedEmotes) {
-      emoteMap.set(emote.code, emote);
-    }
+    await prisma.emote.createMany({
+      skipDuplicates: true,
+      data: BTTVEmotes.map(({ code, id }) => ({
+        code,
+        emoteId: id,
+      })),
+    });
 
     await runTmi(io);
   } catch (e) {

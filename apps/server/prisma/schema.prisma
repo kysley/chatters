@@ -1,0 +1,41 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator pothos {
+  provider = "prisma-pothos-types"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Emote {
+  id         String      @id @default(uuid())
+  emoteId    String
+  code       String      @unique
+  occurances Occurance[]
+
+  // @@index(code)
+}
+
+model Occurance {
+  id              String   @id @default(uuid())
+  emote           Emote    @relation(fields: [emoteCode], references: [code])
+  emoteCode       String
+  uses            Int
+  chatter         Chatter  @relation(fields: [chatterUsername], references: [username])
+  chatterUsername String
+  updatedAt       DateTime @updatedAt
+
+  @@unique([emoteCode, chatterUsername])
+
+  // @@index(emoteCode)
+}
+
+model Chatter {
+  id         String      @id @default(uuid())
+  username   String      @unique
+  occurances Occurance[]
+}

@@ -1,0 +1,24 @@
+type Chatter {
+  id: ID!
+  occurances: [Occurance!]!
+  username: String!
+}
+
+type Emote {
+  code: String!
+  emoteId: String!
+  id: ID!
+  occurances: [Occurance!]!
+}
+
+type Occurance {
+  chatter: Chatter!
+  emote: Emote!
+  id: ID!
+  uses: Int!
+}
+
+type Query {
+  chatter(username: String!): Chatter
+  uses(code: String!): Int!
+}

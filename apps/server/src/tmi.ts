@@ -3,7 +3,7 @@ import tmi from "tmi.js";
 import { FourPieceState } from "types";
 
 import { createComboEvent, createEmoteEvent, createFPEvent } from "./events";
-import { emoteMap, isFourPiece } from "./utils";
+import { prisma, emoteMap, isFourPiece } from "./utils";
 
 const twitchClient = new tmi.Client({
   options: { debug: true },
@@ -15,7 +15,10 @@ export async function runTmi(io: Server) {
 
   const controller = new MessageController({ server: io });
 
-  twitchClient.on("message", controller.process);
+  twitchClient.on(
+    "message",
+    async (a, b, c, d) => await controller.process(a, b, c, d)
+  );
 }
 
 class MessageController {
@@ -38,13 +41,16 @@ class MessageController {
     this.io.emit(type, event);
   };
 
-  process = (
+  process = async (
     channel: string,
     tags: tmi.ChatUserstate,
     message: string,
     self: boolean
   ) => {
     if (self) return;
+    if (!tags["user-id"] || !tags.username) return;
+
+    // console.log(tags.emotes);
 
     const words = message.split(" ");
 
@@ -89,6 +95,41 @@ class MessageController {
         emote: emoteMap.get(key)!,
         count: occurances[key],
       });
+
+      await prisma.chatter.upsert({
+        create: {
+          username: tags.username,
+        },
+        where: {
+          username: tags.username,
+        },
+        update: {
+          occurances: {
+            upsert: {
+              where: {
+                emoteCode_chatterUsername: {
+                  chatterUsername: tags.username,
+                  emoteCode: key,
+                },
+              },
+              create: {
+                uses: occurances[key],
+                emote: {
+                  connect: {
+                    code: key,
+                  },
+                },
+              },
+              update: {
+                uses: {
+                  increment: occurances[key],
+                },
+              },
+            },
+          },
+        },
+      });
+
       this.ioEmit("EMOTE", event);
     }
 
