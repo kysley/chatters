@@ -50,7 +50,7 @@ class MessageController {
     if (self) return;
     if (!tags["user-id"] || !tags.username) return;
 
-    // console.log(tags.emotes);
+    const { username } = tags;
 
     const words = message.split(" ");
 
@@ -60,7 +60,7 @@ class MessageController {
       this.fpState = {
         claps: 0,
         emote: emoteMap.get(fourPieceEmote)!,
-        user: tags.username || "???",
+        user: username,
       };
 
       this.ioEmit("FOUR_PIECE", createFPEvent(this.fpState));
@@ -89,48 +89,56 @@ class MessageController {
     }
 
     const occuranceKeys = Object.keys(occurances);
-
     for (const key of occuranceKeys) {
       const event = createEmoteEvent({
         emote: emoteMap.get(key)!,
         count: occurances[key],
       });
 
-      await prisma.chatter.upsert({
-        create: {
-          username: tags.username,
-        },
+      this.ioEmit("EMOTE", event);
+    }
+
+    if (occuranceKeys.length > 0) {
+      const user = await prisma.chatter.upsert({
         where: {
-          username: tags.username,
+          username,
         },
-        update: {
-          occurances: {
-            upsert: {
-              where: {
-                emoteCode_chatterUsername: {
-                  chatterUsername: tags.username,
-                  emoteCode: key,
+        create: {
+          username,
+        },
+        update: {},
+      });
+
+      await prisma.$transaction(
+        occuranceKeys.map((key) =>
+          prisma.occurance.upsert({
+            where: {
+              emoteCode_chatterUsername: {
+                chatterUsername: username,
+                emoteCode: key,
+              },
+            },
+            create: {
+              uses: occurances[key],
+              emote: {
+                connect: {
+                  code: key,
                 },
               },
-              create: {
-                uses: occurances[key],
-                emote: {
-                  connect: {
-                    code: key,
-                  },
-                },
-              },
-              update: {
-                uses: {
-                  increment: occurances[key],
+              chatter: {
+                connect: {
+                  id: user.id,
                 },
               },
             },
-          },
-        },
-      });
-
-      this.ioEmit("EMOTE", event);
+            update: {
+              uses: {
+                increment: occurances[key],
+              },
+            },
+          })
+        )
+      );
     }
 
     // Exact same emote, or message containing only the exact same emote
