@@ -27,7 +27,13 @@ export type ValueTypes = {
 }>;
 	["Query"]: AliasType<{
 chatter?: [{	username:string},ValueTypes["Chatter"]],
+	stats?:ValueTypes["Stats"],
 uses?: [{	code:string},boolean],
+		__typename?: boolean
+}>;
+	["Stats"]: AliasType<{
+	chatters?:boolean,
+	occurances?:boolean,
 		__typename?: boolean
 }>
   }
@@ -52,7 +58,12 @@ export type ModelTypes = {
 };
 	["Query"]: {
 		chatter?:ModelTypes["Chatter"],
+	stats:ModelTypes["Stats"],
 	uses:number
+};
+	["Stats"]: {
+		chatters:number,
+	occurances:number
 }
     }
 
@@ -80,7 +91,13 @@ export type GraphQLTypes = {
 	["Query"]: {
 	__typename: "Query",
 	chatter?: GraphQLTypes["Chatter"],
+	stats: GraphQLTypes["Stats"],
 	uses: number
+};
+	["Stats"]: {
+	__typename: "Stats",
+	chatters: number,
+	occurances: number
 }
     }
 

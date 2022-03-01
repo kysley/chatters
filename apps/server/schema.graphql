@@ -20,5 +20,11 @@ type Occurance {
 
 type Query {
   chatter(username: String!): Chatter
+  stats: Stats!
   uses(code: String!): Int!
+}
+
+type Stats {
+  chatters: Int!
+  occurances: Int!
 }

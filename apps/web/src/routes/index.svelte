@@ -6,6 +6,7 @@
 	import lru from 'tiny-lru';
 
 	import Emote from '../components/Emote.svelte';
+	import Stats from '../components/Stats.svelte';
 	import { socketUrl } from '../utils';
 
 	let occuranceLru = lru<EmoteAndCount>(10, 15 * 1000);
@@ -65,6 +66,7 @@
 
 <h1>Welcome to chatters</h1>
 <p>Visit <a href="https://twitch.tv/moonmoon">twitch.tv/moonmoon</a></p>
+<Stats />
 
 {#if combo}
 	COMBO <Emote emote={combo.emote} /> x {combo.count}
@@ -76,14 +78,16 @@
 
 {#if keys.length}
 	<div style="display: flex; flex-direction: column; gap: 0.5rem;">
-		{#each keys as emoteItem}
+		{#each keys as emoteItem (emoteItem)}
 			{@const emoteLru = occuranceLru.get(emoteItem)}
 			{#if emoteLru}
 				<div style="display: flex; align-items: flex-end; gap: 0.25rem;">
 					{#key emoteLru.count}
-						<div in:pop={{ duration: 200 }} style="height: {emoteLru.count * 2 + 50}px;">
-							<Emote emote={emoteLru.emote} />
-						</div>
+						<a href={`/e/${emoteLru.emote.code}`}>
+							<div in:pop={{ duration: 200 }} style="height: {emoteLru.count * 2 + 50}px;">
+								<Emote emote={emoteLru.emote} />
+							</div>
+						</a>
 						<div in:fly={{ x: 10, duration: 100 }} style="font-size: {0.7 + emoteLru.count / 8}rem">
 							{emoteLru.count + 'x'}
 						</div>

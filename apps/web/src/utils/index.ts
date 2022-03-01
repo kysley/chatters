@@ -6,6 +6,6 @@ export const socketUrl =
 export const apiUrl =
 	import.meta.env.MODE === 'production'
 		? 'https://api.e8y.fun/chatters/graphql'
-		: 'http://localhost:3610/graphql';
+		: 'http://localhost:3610/chatters/graphql';
 
 export const chain = Chain(apiUrl);

@@ -41,6 +41,11 @@ export const ReturnTypes: Record<string,any> = {
 	},
 	Query:{
 		chatter:"Chatter",
+		stats:"Stats",
 		uses:"Int"
+	},
+	Stats:{
+		chatters:"Int",
+		occurances:"Int"
 	}
 }
