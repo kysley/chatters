@@ -1,4 +1,4 @@
-import Fastify, { FastifyRequest } from "fastify";
+import Fastify from "fastify";
 import FastifyCors from "fastify-cors";
 import got from "got";
 import mercurius from "mercurius";

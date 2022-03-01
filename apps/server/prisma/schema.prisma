@@ -16,8 +16,6 @@ model Emote {
   emoteId    String
   code       String      @unique
   occurances Occurance[]
-
-  // @@index(code)
 }
 
 model Occurance {
@@ -30,8 +28,6 @@ model Occurance {
   updatedAt       DateTime @updatedAt
 
   @@unique([emoteCode, chatterUsername])
-
-  // @@index(emoteCode)
 }
 
 model Chatter {

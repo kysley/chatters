@@ -1,6 +1,7 @@
 import SchemaBuilder from "@pothos/core";
 import { PrismaClient } from "@prisma/client";
 import PrismaPlugin from "@pothos/plugin-prisma";
+import SimpleObjectsPlugin from "@pothos/plugin-simple-objects";
 // This is the default location for the generator, but this can be customized as described above
 // Using a type only import will help avoid issues with undeclared exports in esm mode
 import type PrismaTypes from "@pothos/plugin-prisma/generated";
@@ -10,7 +11,7 @@ const prisma = new PrismaClient({});
 const builder = new SchemaBuilder<{
   PrismaTypes: PrismaTypes;
 }>({
-  plugins: [PrismaPlugin],
+  plugins: [PrismaPlugin, SimpleObjectsPlugin],
   prisma: {
     client: prisma,
   },
@@ -48,6 +49,13 @@ builder.prismaObject("Emote", {
   }),
 });
 
+const StatsType = builder.simpleObject("Stats", {
+  fields: (t) => ({
+    chatters: t.int(),
+    occurances: t.int(),
+  }),
+});
+
 builder.queryType({
   fields: (t) => ({
     chatter: t.prismaField({
@@ -60,6 +68,22 @@ builder.queryType({
         return prisma.chatter.findUnique({
           where: { username: args.username },
         });
+      },
+    }),
+    stats: t.field({
+      type: StatsType,
+      resolve: async (root, args) => {
+        const something = await prisma.chatter.count();
+        const other = await prisma.occurance.aggregate({
+          _count: {
+            uses: true,
+          },
+        });
+
+        return {
+          occurances: other._count.uses.valueOf(),
+          chatters: something,
+        };
       },
     }),
     uses: t.field({
