@@ -5,7 +5,7 @@
   "author": "Evan Kysley",
   "license": "MIT",
   "scripts": {
-    "build": "yarn generate && tsc && yarn build:schema",
+    "build": "tsc && yarn build:schema",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "generate": "prisma generate",
