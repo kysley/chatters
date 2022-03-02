@@ -5,10 +5,11 @@
   "author": "Evan Kysley",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "yarn generate && tsc && yarn build:schema",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build:schema": "yarn node build-schema.js && yarn graphql-codegen"
+    "generate": "prisma generate",
+    "build:schema": "node build-schema.js && graphql-codegen"
   },
   "devDependencies": {
     "@boost/module": "^3.1.0",
