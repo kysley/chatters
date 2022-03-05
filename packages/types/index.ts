@@ -14,7 +14,10 @@ export type BTTVUserResponse = {
   }[];
 };
 
-export type Emote = Omit<BTTVUserResponse["channelEmotes"][number], "userId">;
+export type Emote = Omit<
+  BTTVUserResponse["channelEmotes"][number],
+  "imageType" | "userId"
+>;
 
 export type EmoteAndCount = {
   emote: Emote;
