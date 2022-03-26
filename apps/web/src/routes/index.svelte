@@ -7,9 +7,15 @@
 
 	import Emote from '../components/Emote.svelte';
 	import Stats from '../components/Stats.svelte';
-	import { socketUrl } from '../utils';
+	import { socketUrl, makeRandomTransform } from '../utils';
 
-	let occuranceLru = lru<EmoteAndCount>(10, 15 * 1000);
+	let height: number, width: number;
+
+	type LruItem = EmoteAndCount & {
+		style: string;
+	};
+
+	let occuranceLru = lru<LruItem>(10, 15 * 1000);
 
 	$: keys = [];
 
@@ -22,7 +28,7 @@
 		if (lruItem) {
 			occuranceLru.set(payload.emote.id, { ...lruItem, count: lruItem.count + payload.count });
 		} else {
-			occuranceLru.set(payload.emote.id, payload);
+			occuranceLru.set(payload.emote.id, { ...payload, style: makeRandomTransform(height, width) });
 		}
 
 		keys = occuranceLru.keys();
@@ -64,36 +70,72 @@
 	}
 </script>
 
-<h1>Welcome to chatters</h1>
-<p>Visit <a href="https://twitch.tv/moonmoon">twitch.tv/moonmoon</a></p>
-<Stats />
+<svelte:window bind:innerHeight={height} bind:innerWidth={width} />
+<main class="wrapper">
+	<h1>Welcome to chatters</h1>
+	<p>Visit <a href="https://twitch.tv/moonmoon">twitch.tv/moonmoon</a></p>
+	<Stats />
 
-{#if combo}
-	COMBO <Emote emote={combo.emote} /> x {combo.count}
-{/if}
+	<div style="height: 50px;">
+		{#if combo}
+			COMBO <Emote emote={combo.emote} /> x {combo.count}
+		{/if}
+	</div>
 
-{#if fourPiece}
-	{fourPiece.emote} combo! nice Clap :) {fourPiece.user}. You have {fourPiece.claps}.
-{/if}
+	{#if fourPiece}
+		{fourPiece.emote} combo! nice Clap :) {fourPiece.user}. You have {fourPiece.claps}.
+	{/if}
 
-{#if keys.length}
-	<div style="display: flex; flex-direction: column; gap: 0.5rem;">
+	{#if keys.length}
+		<!-- <div class="wrapper"> -->
 		{#each keys as emoteItem (emoteItem)}
 			{@const emoteLru = occuranceLru.get(emoteItem)}
 			{#if emoteLru}
-				<div style="display: flex; align-items: flex-end; gap: 0.25rem;">
+				<div style="position: absolute; {emoteLru.style}">
 					{#key emoteLru.count}
 						<a href={`/e/${emoteLru.emote.code}`}>
-							<div in:pop={{ duration: 200 }} style="height: {emoteLru.count * 2 + 50}px;">
+							<div in:pop={{ duration: 200 }} style="height: {emoteLru.count * 2 + 90}px;">
 								<Emote emote={emoteLru.emote} />
 							</div>
 						</a>
-						<div in:fly={{ x: 10, duration: 100 }} style="font-size: {0.7 + emoteLru.count / 8}rem">
-							{emoteLru.count + 'x'}
+						<!-- <div in:fly={{ x: 10, duration: 100 }} style="font-size: {0.7 + emoteLru.count / 8}rem"> -->
+						<div
+							in:fly={{ x: 10, duration: 100 }}
+							style="font-size: 1rem; display: flex; justify-content: space-between;"
+						>
+							<span>
+								x{emoteLru.count}
+							</span>
+							{#if combo?.emote.code === emoteLru.emote.code}
+								<span>
+									COMBO x{combo.count}
+								</span>
+							{/if}
 						</div>
 					{/key}
 				</div>
 			{/if}
 		{/each}
-	</div>
-{/if}
+		<!-- </div> -->
+	{/if}
+</main>
+
+<!-- <button on:click={addCombo}>add combo</button> -->
+<style>
+	:global(body) {
+		margin: 0;
+	}
+	:global(html) {
+		height: 100vh;
+		width: 100vw;
+		overflow: hidden;
+	}
+
+	h1 {
+		margin: 0;
+	}
+	.wrapper {
+		height: 100vh;
+		width: 100vw;
+	}
+</style>

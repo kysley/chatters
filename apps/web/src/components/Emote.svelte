@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Emote } from 'types';
+	import { makeBTTVEmoteUrl, makeChannelEmoteUrl } from '../utils';
 
 	export let emote: Emote;
 
-	const makeBTTVEmoteUrl = (emote: Emote) => `https://cdn.betterttv.net/emote/${emote.id}/2x`;
+	$: url = emote.code.includes('moon2') ? makeChannelEmoteUrl(emote) : makeBTTVEmoteUrl(emote);
 </script>
 
-<img src={makeBTTVEmoteUrl(emote)} alt={emote.code} style="height: 100%" />
+<img src={url} alt={emote.code} style="height: 100%" />
